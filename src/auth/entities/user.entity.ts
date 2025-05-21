@@ -31,6 +31,11 @@ export class Auth {
     })
     rol: string[];
 
+    @Column('bool',{
+        default: true,
+    })
+    isActive: boolean;
+
 
     @OneToOne(()=> Cliente, cliente => cliente.auth)
     cliente: Cliente
