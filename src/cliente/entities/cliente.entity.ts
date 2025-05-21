@@ -9,7 +9,12 @@ export class Cliente {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Column('int')
+    @Column('int',
+        {
+            default: 0,
+            nullable: false,
+        }
+    )
     puntos: number;
 
     @OneToOne(()=>Auth, auth => auth.cliente)

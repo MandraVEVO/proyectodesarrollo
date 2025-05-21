@@ -19,16 +19,16 @@ export class CuponController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.cuponService.findOne(+id);
+    return this.cuponService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCuponDto: UpdateCuponDto) {
-    return this.cuponService.update(+id, updateCuponDto);
+    return this.cuponService.update(id, updateCuponDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.cuponService.remove(+id);
+    return this.cuponService.remove(id);
   }
 }
