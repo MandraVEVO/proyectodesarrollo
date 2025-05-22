@@ -8,11 +8,14 @@ import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Empresa } from 'src/empresa/entities/empresa.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ClienteService } from 'src/cliente/cliente.service';
+import { EmpresaService } from 'src/empresa/empresa.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ClienteService,EmpresaService],
   imports:[
+    
     ConfigModule,
     TypeOrmModule.forFeature([
       Auth,

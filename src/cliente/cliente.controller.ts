@@ -27,6 +27,14 @@ export class ClienteController {
     return this.clienteService.update(id, updateClienteDto);
   }
 
+  @Patch(':id/puntos')
+  async updatePuntos(
+    @Param('id') id: string,
+    @Body() puntosData: { puntos: number }
+  ) {
+    return this.clienteService.updatePuntos(id, puntosData);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.clienteService.remove(id);

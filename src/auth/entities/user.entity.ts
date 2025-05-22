@@ -27,7 +27,7 @@ export class Auth {
     @Column({
         type: 'text',
         array: true,
-        default: ['user'],
+        default: ['cliente'],
     })
     rol: string[];
 
@@ -37,10 +37,10 @@ export class Auth {
     isActive: boolean;
 
 
-    @OneToOne(()=> Cliente, cliente => cliente.auth)
+    @OneToOne(()=> Cliente, cliente => cliente.user_id)
     cliente: Cliente
 
-    @OneToOne(()=> Empresa, empresa => empresa.auth)
+    @OneToOne(()=> Empresa, empresa => empresa.user_id)
     empresa: Empresa
 
 

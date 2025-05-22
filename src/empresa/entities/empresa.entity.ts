@@ -19,7 +19,7 @@ export class Empresa {
 
     @OneToOne(()=>Auth, auth => auth.empresa)
     @JoinColumn({name: 'user_id'})
-    auth: Auth
+    user_id: Auth
 
     @OneToMany(
         () => Cupon, 

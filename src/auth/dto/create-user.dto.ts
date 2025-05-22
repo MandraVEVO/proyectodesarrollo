@@ -21,4 +21,6 @@ export class CreateUserDto {
     @IsString()
     @MinLength(9)
     telefono: string;
+
+    
 }

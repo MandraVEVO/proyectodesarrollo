@@ -13,6 +13,11 @@ export class AuthController {
     return this.authService.create(createUserDto);
   }
 
+  @Post('register/empresa')
+  createEmpresa(@Body() createUserDto: CreateUserDto) {
+    return this.authService.createEmpresa(createUserDto);
+  }
+
    @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);

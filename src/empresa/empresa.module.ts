@@ -15,6 +15,10 @@ import { Cupon } from 'src/cupon/entities/cupon.entity';
       Auth,
       Cupon
     ])
+  ],
+  exports: [
+    TypeOrmModule,
+    EmpresaService
   ]
 })
 export class EmpresaModule {}

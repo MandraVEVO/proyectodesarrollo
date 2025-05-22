@@ -16,11 +16,22 @@ export class EmpresaService {
   ) {}
 
   async create(createEmpresaDto: CreateEmpresaDto) {
-     try {
-      const empresa = await this.empresaRepo.save(createEmpresaDto);
-      return empresa;
+    try {
+      // Primero, crea una instancia de Empresa
+      const empresa = this.empresaRepo.create({
+        // Asignar el ID de la empresa igual al ID del usuario
+        id: createEmpresaDto.user_id,
+        empresa: createEmpresaDto.empresa,
+        ubicacion: createEmpresaDto.ubicacion,
+        // La relación debe ser un objeto con id, no un string
+        user_id: { id: createEmpresaDto.user_id }
+      });
+      
+      // Ahora guarda la instancia de Empresa
+      return await this.empresaRepo.save(empresa);
     } catch (error) {
-      this.handleExceptions(error);
+      // Manejo de errores
+      throw new InternalServerErrorException('Error creating empresa');
     }
   }
 
@@ -44,15 +55,36 @@ export class EmpresaService {
   }
 
   async update(id: string, updateEmpresaDto: UpdateEmpresaDto) {
-     try {
-      const empresa = this.empresaRepo.findOneBy({id});
+    try {
+      // Buscar la empresa primero
+      const empresa = await this.empresaRepo.findOneBy({id});
       if (!empresa) {
         throw new NotFoundException(`Empresa with id ${id} not found`);
       }
-      await this.empresaRepo.update(id, updateEmpresaDto);
-      return { ...empresa, ...updateEmpresaDto };
-      } catch (error) {
       
+      // Crear un objeto parcial para la actualización
+      const updateData: Partial<Empresa> = {};
+      
+      // Solo incluir los campos que existen en el DTO
+      if (updateEmpresaDto.empresa !== undefined) {
+        updateData.empresa = updateEmpresaDto.empresa;
+      }
+      if (updateEmpresaDto.ubicacion !== undefined) {
+        updateData.ubicacion = updateEmpresaDto.ubicacion;
+      }
+      // No incluir user_id ya que no debería cambiar
+      
+      // Ahora actualizar con el objeto parcial
+      await this.empresaRepo.update(id, updateData);
+      
+      // Retornar la empresa actualizada
+      return this.empresaRepo.findOne({
+        where: { id },
+        relations: ['user_id']
+      });
+    } catch (error) {
+      // Manejo de errores
+      throw new InternalServerErrorException('Error updating empresa');
     }
   }
 

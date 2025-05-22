@@ -19,7 +19,7 @@ export class Cliente {
 
     @OneToOne(()=>Auth, auth => auth.cliente)
     @JoinColumn({ name: 'user_id' })
-    auth: Auth
+    user_id: Auth
 
     @ManyToMany(
         () => Cupon,

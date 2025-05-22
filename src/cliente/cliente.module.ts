@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Auth } from 'src/auth/entities/user.entity';
 import { Cupon } from 'src/cupon/entities/cupon.entity';
+import { Empresa } from 'src/empresa/entities/empresa.entity';
 
 @Module({
   controllers: [ClienteController],
@@ -15,6 +16,11 @@ import { Cupon } from 'src/cupon/entities/cupon.entity';
       Auth,
       Cupon
     ]),
-  ]
+  ],
+  exports: [
+    TypeOrmModule,
+    ClienteService,
+
+  ],
 })
 export class ClienteModule {}
