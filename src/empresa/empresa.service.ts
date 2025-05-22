@@ -35,9 +35,12 @@ export class EmpresaService {
     }
   }
 
-  async findAll() {
-    return this.empresaRepo.find({
-      relations: {}
+  findAll(options?: any) {
+    return this.empresaRepo.find(options || {
+      relations: {
+        user_id: true,
+        cupones: true
+      }
     });
   }
 
@@ -89,18 +92,23 @@ export class EmpresaService {
   }
 
   async remove(id: string) {
-   try {
+    try {
       const empresa = await this.empresaRepo.findOneBy({id});
       if (!empresa) {
         throw new NotFoundException(`Empresa with id ${id} not found`);
       }
       await this.empresaRepo.remove(empresa);
-    } catch (error) {
-      throw error;
       
+      // Retornar mensaje de éxito en lugar de lanzar un error
+      return { message: `Empresa con ID ${id} eliminada correctamente` };
+    } catch (error) {
+      // Manejar errores aquí
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error al eliminar empresa:', error);
+      throw new InternalServerErrorException('Error removing empresa');
     }
-    throw new InternalServerErrorException('Error removing cliente');
-  
   }
 
   private handleExceptions(error: any) {
@@ -110,4 +118,28 @@ export class EmpresaService {
       this.logger.error(error);
       throw new InternalServerErrorException('Unexpected error, check server logs');
     }
+
+    // Añade este método en EmpresaService
+    async findByUserId(userId: string) {
+      return this.empresaRepo.findOne({
+        where: { user_id: { id: userId } },
+        relations: ['user_id', 'cupones']
+      });
+    }
+
+    // En EmpresaService
+async clearCupones(empresaId: string) {
+  const empresa = await this.empresaRepo.findOne({
+    where: { id: empresaId },
+    relations: ['cupones']
+  });
+  
+  if (empresa && empresa.cupones.length > 0) {
+    // Desasociar cupones
+    empresa.cupones = [];
+    await this.empresaRepo.save(empresa);
+  }
+  
+  return true;
+}
 }

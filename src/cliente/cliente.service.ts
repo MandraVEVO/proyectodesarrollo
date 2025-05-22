@@ -104,16 +104,30 @@ export class ClienteService {
 
  async remove(id: string) {
     try {
-      const cliente = await this.clienteRepo.findOneBy({id});
-      if (!cliente) {
-        throw new NotFoundException(`Cliente with id ${id} not found`);
-      }
-      await this.clienteRepo.remove(cliente);
-    } catch (error) {
-      throw error;
+      // Primero buscar el cliente con todas sus relaciones
+      const cliente = await this.clienteRepo.findOne({
+        where: { id },
+        relations: ['historial', 'user_id']
+      });
       
+      if (!cliente) {
+        throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+      }
+      
+      // Si tiene relaciones historial, vaciarlas primero
+      if (cliente.historial && cliente.historial.length > 0) {
+        cliente.historial = []; // Desasociar cupones
+        await this.clienteRepo.save(cliente);
+      }
+      
+      // Ahora sí eliminamos el cliente
+      await this.clienteRepo.remove(cliente);
+      
+      return { message: `Cliente con ID ${id} eliminado exitosamente` };
+    } catch (error) {
+      console.error('Error al eliminar cliente:', error);
+      throw new InternalServerErrorException('Error removing cliente');
     }
-    throw new InternalServerErrorException('Error removing cliente');
   }
 
 
