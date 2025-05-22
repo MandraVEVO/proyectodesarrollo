@@ -24,6 +24,10 @@ export class CuponController {
   findAll() {
     return this.cuponService.findAll();
   }
+  @Get('personas/:id')
+findPersonasRegistradas(@Param('id') id: string) {
+  return this.cuponService.findPersonasRegistradas(id);
+}
 
   @Get('empresa/:id')
   findAllByEmpresa(@Param('id') empresaId: string) {

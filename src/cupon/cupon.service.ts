@@ -245,6 +245,92 @@ async agregarCliente(cuponId: string, clienteId: string) {
   }
 }
 
+/**
+ * Obtiene la información detallada de todas las personas registradas en un cupón
+ * @param cuponId ID del cupón cuyas personas se quieren consultar
+ * @returns Lista de clientes que están registrados en el cupón
+ */
+async findPersonasRegistradas(cuponId: string) {
+  try {
+    // 1. Buscar el cupón por ID
+    const cupon = await this.cuponRepo.findOneBy({ id: cuponId });
+    
+    if (!cupon) {
+      throw new NotFoundException(`Cupón con ID ${cuponId} no encontrado`);
+    }
+    
+    // 2. Verificar que tenga personas registradas
+    if (!cupon.personas || cupon.personas.length === 0) {
+      return {
+        cupon: {
+          id: cuponId,
+          titulo: cupon.titulo
+        },
+        total: 0,
+        personas: []
+      };
+    }
+    
+    // 3. Buscar la información completa de cada persona
+    const personasDetalladas = await Promise.all(
+      cupon.personas.map(async (clienteId) => {
+        try {
+          // Buscar el cliente usando su ID
+          const cliente = await this.clienteRepo.findOne({
+            where: { id: clienteId },
+            relations: ['user_id'] // Para obtener información del usuario asociado
+          });
+          
+          // Si existe el cliente, devolver datos relevantes
+          if (cliente && cliente.user_id) {
+            return {
+              id: cliente.id,
+              nombre: cliente.user_id.nombre || 'Sin nombre',
+              email: cliente.user_id.email,
+              telefono: cliente.user_id.telefono || 'Sin teléfono',
+              puntos: cliente.puntos
+            };
+          }
+          
+          // Si no existe el cliente pero el ID está en el array, mostrar solo el ID
+          return {
+            id: clienteId,
+            nombre: 'Cliente no encontrado',
+            error: 'El cliente ya no existe en la base de datos'
+          };
+        } catch (error) {
+          this.logger.warn(`Error al buscar el cliente ${clienteId}: ${error.message}`);
+          return {
+            id: clienteId,
+            nombre: 'Error al obtener datos',
+            error: 'No se pudo recuperar la información del cliente'
+          };
+        }
+      })
+    );
+    
+    // 4. Formatear y devolver la respuesta
+    return {
+      cupon: {
+        id: cuponId,
+        titulo: cupon.titulo,
+        precio: cupon.precio,
+        status: cupon.status,
+        fechaExpiracion: cupon.fechaExpiracion,
+        cantidadDisponible: cupon.cantidad
+      },
+      total: personasDetalladas.length,
+      personas: personasDetalladas
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    this.logger.error(`Error al obtener personas del cupón ${cuponId}:`, error);
+    throw new InternalServerErrorException('Error al procesar la solicitud');
+  }
+}
+
     private handleExceptions(error: any) {
       if (error.code === '23505') {
         throw new BadRequestException(error.detail);
