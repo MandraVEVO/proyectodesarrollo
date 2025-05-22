@@ -7,10 +7,14 @@ async function bootstrap() {
   const logger = new Logger('bootstrap');
 
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }))
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,  // Activa la transformación automática
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
   logger.log(`Application is running on: ${process.env.PORT}`);

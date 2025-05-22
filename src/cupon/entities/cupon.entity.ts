@@ -12,7 +12,9 @@ export class Cupon {
     @Column('text')
     titulo: string
     
-    @Column('int')
+    @Column('float',{
+        default: 0,
+    })
     precio: number
     
     @Column('int')
@@ -26,8 +28,8 @@ export class Cupon {
     })
     status: boolean
 
-    @Column()
-    fechaExpiracion: Date
+    @Column('text')
+    fechaExpiracion: string
 
     @ManyToMany(
         () => Cliente,

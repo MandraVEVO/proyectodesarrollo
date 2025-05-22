@@ -4,6 +4,7 @@ import { UpdateCuponDto } from './dto/update-cupon.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cupon } from './entities/cupon.entity';
 import { Repository } from 'typeorm';
+import { Empresa } from 'src/empresa/entities/empresa.entity';
 
 @Injectable()
 export class CuponService {
@@ -14,6 +15,8 @@ export class CuponService {
   constructor(
      @InjectRepository(Cupon)
      private cuponRepo: Repository<Cupon>,
+     @InjectRepository(Empresa)
+     private empresaRepo: Repository<Empresa>,
   ) {}
 
   async create(createCuponDto: CreateCuponDto) {
@@ -59,19 +62,51 @@ export class CuponService {
 
   async remove(id: string) {
     try {
-      const cliente = await this.cuponRepo.findOneBy({id});
-      if (!cliente) {
-        throw new NotFoundException(`Cliente with id ${id} not found`);
+      const cupon = await this.cuponRepo.findOneBy({id});
+      if (!cupon) {
+        throw new NotFoundException(`Cupon with id ${id} not found`);
       }
-      await this.cuponRepo.remove(cliente);
-    } catch (error) {
-      throw error;
+      await this.cuponRepo.remove(cupon);
       
+      // Retornar confirmación en lugar de lanzar error
+      return { message: `Cupon with id ${id} successfully removed` };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(`Error removing cupon: ${error.message}`);
     }
-    throw new InternalServerErrorException('Error removing cliente');
-  
   }
 
+  async createWithEmpresa(empresaId: string, createCuponDto: CreateCuponDto) {
+    try {
+      // 1. Verificar que la empresa existe
+      const empresa = await this.empresaRepo.findOneBy({ id: empresaId });
+      if (!empresa) {
+        throw new NotFoundException(`Empresa con ID ${empresaId} no encontrada`);
+      }
+
+      // 2. Crear el cupón con relación a la empresa
+      const cupon = this.cuponRepo.create({
+        ...createCuponDto,
+        empresa: empresa  // Establece la relación con la empresa
+      });
+
+      // 3. Guardar el cupón
+      const savedCupon = await this.cuponRepo.save(cupon);
+
+      // 4. Retornar el cupón creado con información básica de la empresa
+      return {
+        ...savedCupon,
+        empresa: {
+          id: empresa.id,
+          nombre: empresa.empresa
+        }
+      };
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
 
     private handleExceptions(error: any) {
       if (error.code === '23505') {

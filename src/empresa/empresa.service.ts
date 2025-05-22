@@ -5,6 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Empresa } from './entities/empresa.entity';
 import { Repository } from 'typeorm';
 import e from 'express';
+import { Cupon } from 'src/cupon/entities/cupon.entity';
+import { CuponService } from '../cupon/cupon.service';
+import { CreateCuponDto } from '../cupon/dto/create-cupon.dto';
 
 @Injectable()
 export class EmpresaService {
@@ -13,6 +16,8 @@ export class EmpresaService {
   constructor(
    @InjectRepository(Empresa)
    private empresaRepo: Repository<Empresa>,
+   
+     // Inyectar CuponService
   ) {}
 
   async create(createEmpresaDto: CreateEmpresaDto) {
@@ -142,4 +147,6 @@ async clearCupones(empresaId: string) {
   
   return true;
 }
+
+
 }

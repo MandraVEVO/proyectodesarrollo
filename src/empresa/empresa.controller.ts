@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { EmpresaService } from './empresa.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 import { UpdateEmpresaDto } from './dto/update-empresa.dto';
+import { CreateCuponDto } from 'src/cupon/dto/create-cupon.dto';
 
 @Controller('empresa')
 export class EmpresaController {
@@ -31,4 +32,6 @@ export class EmpresaController {
   remove(@Param('id') id: string) {
     return this.empresaService.remove(id);
   }
+
+  
 }

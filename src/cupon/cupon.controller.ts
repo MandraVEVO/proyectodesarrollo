@@ -12,6 +12,14 @@ export class CuponController {
     return this.cuponService.create(createCuponDto);
   }
 
+  @Post('empresa/:id')
+  createWithEmpresa(
+    @Param('id') empresaId: string,
+    @Body() createCuponDto: CreateCuponDto
+  ) {
+    return this.cuponService.createWithEmpresa(empresaId, createCuponDto);
+  }
+
   @Get()
   findAll() {
     return this.cuponService.findAll();
