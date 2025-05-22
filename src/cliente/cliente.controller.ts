@@ -39,4 +39,9 @@ export class ClienteController {
   remove(@Param('id') id: string) {
     return this.clienteService.remove(id);
   }
+
+  @Get(':id/cupones')
+  findCuponesByCliente(@Param('id') id: string) {
+    return this.clienteService.findCuponesByCliente(id);
+  }
 }

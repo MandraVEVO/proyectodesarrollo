@@ -10,6 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ClienteService } from 'src/cliente/cliente.service';
 import { EmpresaService } from 'src/empresa/empresa.service';
+import { Cupon } from 'src/cupon/entities/cupon.entity';
 
 @Module({
   controllers: [AuthController],
@@ -20,7 +21,8 @@ import { EmpresaService } from 'src/empresa/empresa.service';
     TypeOrmModule.forFeature([
       Auth,
       Cliente,
-      Empresa
+      Empresa,
+      Cupon
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }), 
 //modulo asincrono

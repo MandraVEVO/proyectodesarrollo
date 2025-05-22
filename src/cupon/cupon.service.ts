@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cupon } from './entities/cupon.entity';
 import { Repository } from 'typeorm';
 import { Empresa } from 'src/empresa/entities/empresa.entity';
+import { Cliente } from 'src/cliente/entities/cliente.entity';
 
 @Injectable()
 export class CuponService {
@@ -17,6 +18,8 @@ export class CuponService {
      private cuponRepo: Repository<Cupon>,
      @InjectRepository(Empresa)
      private empresaRepo: Repository<Empresa>,
+     @InjectRepository(Cliente)
+     private clienteRepo: Repository<Cliente>,
   ) {}
 
   async create(createCuponDto: CreateCuponDto) {
@@ -29,9 +32,31 @@ export class CuponService {
   }
 
   async findAll() {
-    return this.cuponRepo.find({
-      relations:{}
-    })
+    try {
+      // Buscar todos los cupones activos y cargar sus empresas relacionadas
+      const cupones = await this.cuponRepo.find({
+        where: {
+          status: true  // Solo cupones activos
+        },
+        relations: ['empresa'],  // Incluir la relación con empresa
+        order: {
+          fechaExpiracion: 'DESC'  // Ordenar por fecha de expiración (opcional)
+        }
+      });
+
+      // Transformar la respuesta para tener un formato más limpio
+      return cupones.map(cupon => ({
+        ...cupon,
+        empresa: cupon.empresa ? {
+          id: cupon.empresa.id,
+          nombre: cupon.empresa.empresa,
+          ubicacion: cupon.empresa.ubicacion
+        } : null
+      }));
+    } catch (error) {
+      this.logger.error('Error al buscar cupones activos:', error);
+      throw new InternalServerErrorException('Error al obtener los cupones activos');
+    }
   }
 
   async findOne(id: string) {
@@ -107,6 +132,118 @@ export class CuponService {
       this.handleExceptions(error);
     }
   }
+
+  /**
+ * Obtiene todos los cupones que pertenecen a una empresa específica
+ * @param empresaId ID de la empresa cuyos cupones se quieren consultar
+ * @returns Array con todos los cupones de la empresa
+ */
+async findAllByEmpresa(empresaId: string) {
+  try {
+    // 1. Verificar que la empresa existe
+    const empresaExists = await this.empresaRepo.findOneBy({ id: empresaId });
+    if (!empresaExists) {
+      throw new NotFoundException(`Empresa con ID ${empresaId} no encontrada`);
+    }
+
+    // 2. Buscar todos los cupones asociados a esa empresa
+    const cupones = await this.cuponRepo.find({
+      where: {
+        empresa: { id: empresaId }
+      },
+      relations: ['empresa'], // incluir info de la empresa relacionada
+      order: {
+        fechaExpiracion: 'DESC' // ordenar por fecha de expiración descendente (opcional)
+      }
+    });
+
+    // 3. Retornar los cupones encontrados
+    return {
+      empresa: {
+        id: empresaId,
+        nombre: empresaExists.empresa
+      },
+      cantidad: cupones.length,
+      cupones
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    this.handleExceptions(error);
+  }
+}
+
+/**
+ * Agrega un cliente al cupón y actualiza su estado
+ * @param cuponId ID del cupón al que se agregará el cliente
+ * @param clienteId ID del cliente a agregar
+ * @returns El cupón actualizado
+ */
+async agregarCliente(cuponId: string, clienteId: string) {
+  try {
+    // 1. Buscar el cupón
+    const cupon = await this.cuponRepo.findOneBy({ id: cuponId });
+    
+    if (!cupon) {
+      throw new NotFoundException(`Cupón con ID ${cuponId} no encontrado`);
+    }
+    
+    // 2. Verificar que el cupón esté activo
+    if (!cupon.status) {
+      throw new BadRequestException('Este cupón ya no está disponible');
+    }
+    
+    // 3. Verificar que queden cupones disponibles
+    if (cupon.cantidad <= 0) {
+      throw new BadRequestException('No quedan cupones disponibles');
+    }
+    
+    // 4. Verificar si el cliente ya está en la lista
+    if (cupon.personas.includes(clienteId)) {
+      throw new BadRequestException('Este cliente ya ha adquirido este cupón');
+    }
+    
+    // 5. Agregar el cliente al arreglo de personas
+    cupon.personas.push(clienteId);
+    
+    // 6. Decrementar la cantidad disponible
+    cupon.cantidad -= 1;
+    
+    // 7. Si ya no quedan cupones, desactivar
+    if (cupon.cantidad === 0) {
+      cupon.status = false;
+    }
+    
+    // 8. Guardar los cambios
+    await this.cuponRepo.save(cupon);
+    
+    // 9. También agregar el cupón al historial del cliente (opcional)
+    await this.clienteRepo.createQueryBuilder()
+      .relation(Cliente, "historial")
+      .of(clienteId)
+      .add(cuponId);
+    
+    // 10. Retornar el cupón actualizado
+    return {
+      message: 'Cupón agregado al cliente correctamente',
+      cupon: {
+        id: cupon.id,
+        titulo: cupon.titulo,
+        cantidad: cupon.cantidad,
+        status: cupon.status,
+        fechaExpiracion: cupon.fechaExpiracion,
+        clientesRegistrados: cupon.personas.length
+      }
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      throw error;
+    }
+    this.logger.error(`Error al agregar cliente ${clienteId} al cupón ${cuponId}:`, error);
+    throw new InternalServerErrorException('Error al procesar la solicitud');
+  }
+}
 
     private handleExceptions(error: any) {
       if (error.code === '23505') {

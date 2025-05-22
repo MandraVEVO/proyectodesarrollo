@@ -25,6 +25,11 @@ export class CuponController {
     return this.cuponService.findAll();
   }
 
+  @Get('empresa/:id')
+  findAllByEmpresa(@Param('id') empresaId: string) {
+    return this.cuponService.findAllByEmpresa(empresaId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cuponService.findOne(id);
@@ -38,5 +43,13 @@ export class CuponController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.cuponService.remove(id);
+  }
+
+  @Post(':id/agregar-cliente/:clienteId')
+  agregarCliente(
+    @Param('id') cuponId: string,
+    @Param('clienteId') clienteId: string
+  ) {
+    return this.cuponService.agregarCliente(cuponId, clienteId);
   }
 }

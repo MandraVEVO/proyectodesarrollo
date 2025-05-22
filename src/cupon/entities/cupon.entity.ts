@@ -31,6 +31,12 @@ export class Cupon {
     @Column('text')
     fechaExpiracion: string
 
+    @Column({
+        type: 'text',
+        array: true,
+        default: []
+    })
+    personas: string[]
     @ManyToMany(
         () => Cliente,
         (cliente) => cliente.historial

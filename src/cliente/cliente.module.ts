@@ -16,6 +16,7 @@ import { Empresa } from 'src/empresa/entities/empresa.entity';
       Auth,
       Cupon
     ]),
+    
   ],
   exports: [
     TypeOrmModule,
