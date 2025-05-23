@@ -19,6 +19,8 @@ export class AuthController {
   }
 
   @Post('register/empresa')
+  @Auth(ValidRoles.admin)
+  @UseGuards(JwtBlacklistGuard)
   createEmpresa(@Body() createUserDto: CreateUserDto) {
     return this.authService.createEmpresa(createUserDto);
   }
@@ -40,7 +42,15 @@ export class AuthController {
     return this.authService.actualizarDatos(id, updateUserDto);
   }
 
+  @Post('create/admin')
+  createAdmin(@Body() createUserDto: CreateUserDto) {
+    return this.authService.createAdmin(createUserDto);
+  }
+
+
   @Delete(':id/delete')
+  @UseGuards(JwtBlacklistGuard)
+  @Auth(ValidRoles.admin,ValidRoles.cliente)
   deleteUser(@Param('id') id: string) {
     return this.authService.deleteAccount(id);
   }

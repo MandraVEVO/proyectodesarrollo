@@ -1,7 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ClienteService } from './cliente.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
+import { Auth } from 'src/auth/decorators/role-protected.decorators.ts/auth.decorator';
+import { ValidRoles } from 'src/auth/dto/interfaces/valid-roles';
+import { JwtBlacklistGuard } from 'src/auth/guards/jwt-blacklist.guard';
 
 @Controller('cliente')
 export class ClienteController {
@@ -28,6 +31,8 @@ export class ClienteController {
   }
 
   @Patch(':id/puntos')
+  @Auth(ValidRoles.empresa)
+  @UseGuards(JwtBlacklistGuard)
   async updatePuntos(
     @Param('id') id: string,
     @Body() puntosData: { puntos: number }

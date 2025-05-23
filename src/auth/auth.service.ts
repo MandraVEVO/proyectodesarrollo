@@ -60,6 +60,33 @@ export class AuthService {
     }
   }
 
+    async createAdmin(createUserDto: CreateUserDto) {
+    try {
+      const { password, ...userData } = createUserDto;
+      
+      const user = this.authRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+        rol: ['admin']  // Asignar rol de admin
+      });
+      
+      // Primero guarda el usuario para obtener su ID
+      await this.authRepository.save(user);
+      
+      // Ahora crea el cliente con el ID del usuario
+      const createClienteDto: CreateClienteDto = { user_id: user.id };
+      await this.clienteService.create(createClienteDto);
+
+      return {
+        ...user,
+        token: this.getJwtToken({id: user.id}),
+      }
+
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
   
   
 

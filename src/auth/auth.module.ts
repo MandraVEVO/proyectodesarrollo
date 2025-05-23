@@ -13,12 +13,13 @@ import { EmpresaService } from 'src/empresa/empresa.service';
 import { Cupon } from 'src/cupon/entities/cupon.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtBlacklistGuard } from './guards/jwt-blacklist.guard';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, ClienteService,EmpresaService,JwtStrategy,JwtBlacklistGuard],
   imports:[
-    
+    CacheModule,
     ConfigModule,
     TypeOrmModule.forFeature([
       Auth,
