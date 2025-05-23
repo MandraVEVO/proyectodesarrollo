@@ -11,10 +11,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { ClienteService } from 'src/cliente/cliente.service';
 import { EmpresaService } from 'src/empresa/empresa.service';
 import { Cupon } from 'src/cupon/entities/cupon.entity';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtBlacklistGuard } from './guards/jwt-blacklist.guard';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, ClienteService,EmpresaService],
+  providers: [AuthService, ClienteService,EmpresaService,JwtStrategy,JwtBlacklistGuard],
   imports:[
     
     ConfigModule,
@@ -43,6 +45,8 @@ import { Cupon } from 'src/cupon/entities/cupon.entity';
     TypeOrmModule,
     JwtModule,
     PassportModule,
+    JwtStrategy,
+    JwtBlacklistGuard
     
   ]
   

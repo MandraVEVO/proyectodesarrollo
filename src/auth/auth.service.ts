@@ -17,8 +17,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
-
-    constructor(
+  // Almacén de tokens invalidados (en memoria - para producción usar Redis)
+  private invalidatedTokens: Set<string> = new Set();
+  
+  constructor(
   @InjectRepository(Auth)
   private readonly authRepository: Repository<Auth>,  
 
@@ -245,6 +247,39 @@ export class AuthService {
     } catch (error) {
       this.handleDBErrors(error);
     }
+  }
+
+  // Método para logout
+  async logout(userId: string, token: string) {
+    try {
+      // 1. Verificar que el usuario existe
+      const user = await this.authRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException('Usuario no encontrado');
+      }
+
+      // 2. Añadir el token a la lista negra
+      this.invalidatedTokens.add(token);
+      
+      // 3. Opcional: Guardar en base de datos para persistencia
+      // await this.tokenBlacklistRepository.save({ token, expiresAt: ... });
+
+      // 4. Retornar confirmación
+      return {
+        statusCode: 200,
+        message: 'Sesión cerrada correctamente'
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      this.handleDBErrors(error);
+    }
+  }
+
+  // Método para verificar si un token está en la lista negra
+  isTokenInvalidated(token: string): boolean {
+    return this.invalidatedTokens.has(token);
   }
 
   private getJwtToken( payload: JwtPayload){

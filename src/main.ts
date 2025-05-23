@@ -16,6 +16,13 @@ async function bootstrap() {
     }),
   );
 
+  // Habilitar CORS para todas las rutas
+  app.enableCors({
+    origin: true, // o especifica orígenes permitidos: ['http://localhost:3000', 'https://myapp.com']
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // Si necesitas enviar cookies o cabeceras de autenticación
+  });
+  
   await app.listen(process.env.PORT ?? 3000);
   logger.log(`Application is running on: ${process.env.PORT}`);
 }

@@ -7,6 +7,9 @@ import { TicketModule } from './ticket/ticket.module';
 import { CuponModule } from './cupon/cupon.module';
 import { AuthModule } from './auth/auth.module';
 import { ClienteService } from './cliente/cliente.service';
+import { FilesModule } from './files/files.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 
 @Module({
@@ -22,6 +25,9 @@ import { ClienteService } from './cliente/cliente.service';
       autoLoadEntities: true,
       synchronize: true, // Solo en desarrollo
     }),
+    ServeStaticModule.forRoot({
+    rootPath: join(__dirname, '..', 'public'),
+   }),
 
   
 
@@ -34,6 +40,8 @@ import { ClienteService } from './cliente/cliente.service';
     CuponModule,
 
     AuthModule,
+
+    FilesModule,
   ],
   controllers: [],
   providers: [],

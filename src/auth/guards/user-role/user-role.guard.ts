@@ -16,36 +16,46 @@ export class UserRoleGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     
-    const validRoles: string[] = this.reflector.get(META_ROLES,context.getHandler())
+    const validRoles: string[] = this.reflector.get(META_ROLES, context.getHandler());
 
-    if(!validRoles){
-      return true;
-    }
-    if(validRoles.length === 0){
+    if (!validRoles || validRoles.length === 0) {
       return true;
     }
 
     const req = context.switchToHttp().getRequest();
     const user = req.user;
 
-
-    if(!req.user){
+    if (!user) {
       throw new BadRequestException('User not found in request');
     }
 
-    console.log({userRoles: user.roles});
+    // Añade este log para ver la estructura completa del usuario
+    console.log('User object:', JSON.stringify(user, null, 2));
 
-    for (const role of user.roles) {
-      if (validRoles.includes(role)){
+    // Maneja tanto 'rol' como 'roles'
+    let userRoles = [];
+    
+    if (user.roles && Array.isArray(user.roles)) {
+      userRoles = user.roles;
+    } else if (user.rol && Array.isArray(user.rol)) {
+      userRoles = user.rol;
+    } else if (typeof user.rol === 'string') {
+      userRoles = user.rol;
+    } else {
+      console.log('No se encontraron roles en el usuario');
+      userRoles = [];
+    }
+
+    console.log('Roles del usuario:', userRoles);
+    console.log('Roles requeridos:', validRoles);
+
+    // Verificar si el usuario tiene alguno de los roles requeridos
+    for (const role of userRoles) {
+      if (validRoles.includes(role)) {
         return true;
       }
     }
-    
-   throw new ForbiddenException(`User ${user.fullName} need a valid role: [${validRoles}]`); //403
 
-
-
-
-
+    throw new ForbiddenException(`User ${user.nombre || 'unknown'} need a valid role: [${validRoles}]`);
   }
 }

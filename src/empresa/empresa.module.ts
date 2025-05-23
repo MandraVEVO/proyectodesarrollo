@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Empresa } from './entities/empresa.entity';
 import { Auth } from 'src/auth/entities/user.entity';
 import { Cupon } from 'src/cupon/entities/cupon.entity';
+import { EmpresaImage } from './entities/empresa-image.entity';
 
 @Module({
   controllers: [EmpresaController],
@@ -13,7 +14,8 @@ import { Cupon } from 'src/cupon/entities/cupon.entity';
     TypeOrmModule.forFeature([
       Empresa,
       Auth,
-      Cupon
+      Cupon,
+      EmpresaImage
     ])
   ],
   exports: [

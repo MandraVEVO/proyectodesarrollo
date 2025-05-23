@@ -1,6 +1,7 @@
 import { Auth } from "src/auth/entities/user.entity";
 import { Cupon } from "src/cupon/entities/cupon.entity";
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { EmpresaImage } from "./empresa-image.entity";
 
 
 @Entity()
@@ -26,4 +27,13 @@ export class Empresa {
         (cupon) => cupon.empresa
     )
     cupones: Cupon[];
+
+    @OneToMany(()=>EmpresaImage,empresaImage => empresaImage.recompensa,
+{ cascade:true,
+    eager: true,
+})
+    image?: EmpresaImage[];
+
+
+
 }

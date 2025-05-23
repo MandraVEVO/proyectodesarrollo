@@ -1,8 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ValidRoles } from './dto/interfaces/valid-roles';
+import { Auth } from './decorators/role-protected.decorators.ts/auth.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtBlacklistGuard } from './guards/jwt-blacklist.guard';
 
 
 @Controller('auth')
@@ -25,6 +29,8 @@ export class AuthController {
   }
 
   @Delete('empresa/:id/delete')
+  @UseGuards(JwtBlacklistGuard)
+  @Auth(ValidRoles.admin)
   deleteEmpresaAccount(@Param('id') id: string) {
     return this.authService.deleteEmpresaAccount(id);
   }
@@ -39,7 +45,10 @@ export class AuthController {
     return this.authService.deleteAccount(id);
   }
 
-  
-
-  
+  @Post('logout')
+  @UseGuards(JwtBlacklistGuard)
+  async logout(@Req() request) {
+    const token = request.headers.authorization?.split(' ')[1];
+    return this.authService.logout(request.user.id, token);
+  }
 }
