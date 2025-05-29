@@ -6,6 +6,7 @@ import { Empresa } from './entities/empresa.entity';
 import { Auth } from 'src/auth/entities/user.entity';
 import { Cupon } from 'src/cupon/entities/cupon.entity';
 import { EmpresaImage } from './entities/empresa-image.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [EmpresaController],
@@ -16,7 +17,8 @@ import { EmpresaImage } from './entities/empresa-image.entity';
       Auth,
       Cupon,
       EmpresaImage
-    ])
+    ]),
+    AuthModule
   ],
   exports: [
     TypeOrmModule,

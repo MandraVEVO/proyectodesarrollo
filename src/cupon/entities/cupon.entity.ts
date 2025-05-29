@@ -19,6 +19,9 @@ export class Cupon {
     
     @Column('int')
     cantidad: number
+
+    @Column('int',{default: 0})
+    cantidadInicial: number
     
     @Column('text')
     detalles: string

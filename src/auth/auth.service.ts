@@ -320,5 +320,5 @@ export class AuthService {
     console.log(error);
     throw new InternalServerErrorException('Please check server logs');
   }
-  
+  ///implementar ver todos los usuarios, empresa, y admin 
 }

@@ -60,17 +60,66 @@ export class FilesService {
 
   // Obtener todas las imágenes de una empresa
   async getEmpresaImages(empresaId: string) {
+    // Buscar la empresa incluyendo su relación con las imágenes
     const empresa = await this.empresaRepository.findOne({
       where: { id: empresaId },
-      relations: []
+      relations: ['image'] // Cargar las imágenes relacionadas
     });
     
     if (!empresa) {
       throw new NotFoundException(`Empresa con ID ${empresaId} no encontrada`);
     }
     
-    return empresa.image;
+    // Verificar si hay imágenes
+    if (!empresa.image || empresa.image.length === 0) {
+      return []; // Retornar un array vacío si no hay imágenes
+    }
+    
+    // Retornar un array con los detalles completos de cada imagen
+    return empresa.image.map(img => ({
+      id: img.id,
+      nombre: img.nombre,
+      descripcion: img.descripcion,
+      costo: img.costo,
+      url: img.url,
+      // Asegúrate de que la URL sea completa
+      imagenCompleta: img.url.startsWith('http') ? img.url : `${process.env.HOST_API || 'http://localhost:3000'}/files/recompensa/${img.url}`
+    }));
   }
+
+  // Obtener todas las imágenes de todas las empresas
+async getAllImages() {
+  try {
+    // Buscar todas las imágenes de empresas
+    const images = await this.empresaImageRepository.find({
+      relations: ['recompensa'] // Cargar la relación con la empresa
+    });
+    
+    // Si no hay imágenes, devolver array vacío
+    if (!images || images.length === 0) {
+      return [];
+    }
+    
+    // Transformar los resultados para incluir los detalles de la imagen y la URL completa
+    return images.map(img => ({
+      id: img.id,
+      nombre: img.nombre,
+      descripcion: img.descripcion,
+      costo: img.costo,
+      url: img.url,
+      // Información de la empresa relacionada
+      empresa: img.recompensa ? {
+        id: img.recompensa.id,
+        nombre: img.recompensa.empresa
+      } : null,
+      // Asegúrate de que la URL sea completa
+      imagenCompleta: img.url.startsWith('http') ? img.url : `${process.env.HOST_API || 'http://localhost:3000'}/files/recompensa/${img.url}`
+    }));
+  } catch (error) {
+    console.error('Error al obtener todas las imágenes:', error);
+    throw new Error('Error al obtener las imágenes de todas las empresas');
+  }
+}
 
   // Eliminar una imagen
   async removeEmpresaImage(imageId: string) {

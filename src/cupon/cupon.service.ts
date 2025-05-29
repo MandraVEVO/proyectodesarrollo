@@ -133,6 +133,7 @@ export class CuponService {
     }
   }
 
+
   /**
  * Obtiene todos los cupones que pertenecen a una empresa específica
  * @param empresaId ID de la empresa cuyos cupones se quieren consultar

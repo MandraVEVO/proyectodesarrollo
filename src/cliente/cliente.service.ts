@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { ArrayContains, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Cupon } from 'src/cupon/entities/cupon.entity';
+import { Auth } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class ClienteService {
@@ -16,6 +17,8 @@ export class ClienteService {
     private clienteRepo: Repository<Cliente>,
     @InjectRepository(Cupon)
     private cuponRepo: Repository<Cupon>,
+    @InjectRepository(Auth)
+    private authRepo: Repository<Auth>,
     
   ) {}
 
@@ -46,14 +49,51 @@ export class ClienteService {
 
   async findOne(id: string) {
     try {
-      const cliente = await this.clienteRepo.findOneBy({id});
+      // Buscar el cliente con todas sus relaciones importantes
+      const cliente = await this.clienteRepo.findOne({
+        where: { id },
+        relations: ['historial', 'user_id']
+      });
+      
       if (!cliente) {
         throw new NotFoundException(`Cliente with id ${id} not found`);
       }
-      return cliente;
+    
+      
+      // Formatear la respuesta siguiendo el patrón de findCuponesByCliente
+      return {
+        cliente: {
+          id: cliente.id,
+          puntos: cliente.puntos,
+          historial: cliente.historial.map(cupon => ({
+            id: cupon.id,
+            titulo: cupon.titulo,
+            precio: cupon.precio,
+            detalles: cupon.detalles,
+            status: cupon.status,
+            fechaExpiracion: cupon.fechaExpiracion,
+            empresa: cupon.empresa ? {
+              id: cupon.empresa.id,
+              nombre: cupon.empresa.empresa,
+              ubicacion: cupon.empresa.ubicacion
+            } : null
+          }))
+          
+        },
+        usuario: cliente.user_id ? {
+          id: cliente.user_id.id,
+          nombre: cliente.user_id.nombre || 'Sin nombre',
+          email: cliente.user_id.email || 'Sin correo',
+          telefono: cliente.user_id.telefono || 'Sin teléfono',
+          estado: cliente.user_id.isActive ? 'Activo' : 'Inactivo'
+        } : null
+      };
     } catch (error) {
-            throw new NotFoundException(`Cliente with id ${id} not found`);
-
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`Error al buscar cliente con ID ${id}:`, error);
+      throw new InternalServerErrorException('Error al obtener los datos del cliente');
     }
   }
 

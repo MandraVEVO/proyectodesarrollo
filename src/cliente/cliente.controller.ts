@@ -10,25 +10,15 @@ import { JwtBlacklistGuard } from 'src/auth/guards/jwt-blacklist.guard';
 export class ClienteController {
   constructor(private readonly clienteService: ClienteService) {}
 
-  @Post()
-  create(@Body() createClienteDto: CreateClienteDto) {
-    return this.clienteService.create(createClienteDto);
-  }
 
-  @Get()
-  findAll() {
-    return this.clienteService.findAll();
-  }
+  
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.clienteService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClienteDto: UpdateClienteDto) {
-    return this.clienteService.update(id, updateClienteDto);
-  }
+  
 
   @Patch(':id/puntos')
   @Auth(ValidRoles.empresa)
@@ -40,12 +30,11 @@ export class ClienteController {
     return this.clienteService.updatePuntos(id, puntosData);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clienteService.remove(id);
-  }
+ 
 
   @Get(':id/cupones')
+  @Auth(ValidRoles.empresa,ValidRoles.cliente)
+  @UseGuards(JwtBlacklistGuard)
   findCuponesByCliente(@Param('id') id: string) {
     return this.clienteService.findCuponesByCliente(id);
   }

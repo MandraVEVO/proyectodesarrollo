@@ -6,6 +6,7 @@ import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Cupon } from './entities/cupon.entity';
 import { Empresa } from 'src/empresa/entities/empresa.entity';
 import { Ticket } from 'src/ticket/entities/ticket.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [CuponController],
@@ -17,7 +18,8 @@ import { Ticket } from 'src/ticket/entities/ticket.entity';
       Empresa,
       Ticket
     
-    ])
+    ]),
+    AuthModule
   ],
   exports: [
     TypeOrmModule,

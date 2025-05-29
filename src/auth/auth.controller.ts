@@ -38,11 +38,15 @@ export class AuthController {
   }
 
   @Patch('update/:id')
+  @UseGuards(JwtBlacklistGuard)
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.authService.actualizarDatos(id, updateUserDto);
   }
 
   @Post('create/admin')
+  //@UseGuards(JwtBlacklistGuard)
+  //@Auth(ValidRoles.admin)
   createAdmin(@Body() createUserDto: CreateUserDto) {
     return this.authService.createAdmin(createUserDto);
   }
