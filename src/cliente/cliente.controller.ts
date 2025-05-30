@@ -10,7 +10,10 @@ import { JwtBlacklistGuard } from 'src/auth/guards/jwt-blacklist.guard';
 export class ClienteController {
   constructor(private readonly clienteService: ClienteService) {}
 
-
+  @Get()
+  findAll() {
+    return this.clienteService.findAll();
+  }
   
 
   @Get(':id')
